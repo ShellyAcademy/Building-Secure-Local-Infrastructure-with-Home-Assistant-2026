@@ -304,6 +304,34 @@ Example scenarios:
 -   date range queries
 -   week‑over‑week comparisons
 
+# Additional Logging Requirement
+
+Implement **minimal but useful logging**, focused mainly on database queries.
+
+The component should log the **final validated InfluxQL query before execution**.
+
+Database logging should include:
+
+- the **final validated InfluxQL query**
+- the **resolved time range**
+- the **database name**
+- whether the query execution **succeeded or failed**
+- detection of **empty result sets**
+
+Avoid excessive internal system logs. Logging should remain concise and focused on diagnosing **query generation and database execution issues**.
+
+## Sensitive Data Redaction
+
+Logs must **never expose secrets**.
+
+Never log:
+
+- API keys
+- passwords
+- tokens
+- authorization headers
+
+
 ------------------------------------------------------------------------
 
 # Critical Requirement
