@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure AI Influx Voice",
+        "data": {
+          "influx_host": "InfluxDB Host (e.g., 192.168.1.100)",
+          "influx_port": "InfluxDB Port",
+          "influx_db": "Database Name",
+          "influx_user": "Username (Optional)",
+          "influx_pass": "Password (Optional)",
+          "llm_provider": "LLM Provider",
+          "api_key": "API Key (Leave blank for Ollama)",
+          "model_name": "Model Name (e.g., gpt-4o, llama3)",
+          "ollama_url": "Ollama URL (e.g., http://localhost:11434)",
+          "refresh_interval": "Schema Refresh Interval (hours)",
+          "dry_run": "Dry Run Mode (Do not execute queries)"
+        }
+      }
+    }
+  }
+}

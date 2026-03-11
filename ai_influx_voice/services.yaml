@@ -1,0 +1,4 @@
+refresh_schema:
+  name: Refresh Schema Snapshot
+  description: Forces a fresh introspection of the InfluxDB 1.8 schema, updating measurements, fields, and entities.
+  fields: {}
