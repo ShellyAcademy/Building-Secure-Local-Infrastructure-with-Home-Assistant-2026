@@ -1,0 +1,32 @@
+// 1. Define the data stream
+var power_data = stream
+    |from()
+        .measurement('W')
+        // Replace with your actual entity ID name in InfluxDB
+        .where(lambda: "entity_id" == 'sensor.shelly_plus_plug_s_d4d4da344064_relay_0_power')
+
+// 2. Define the two "Complex" Stacked States
+// State A: Compressor is off, but the light is on (~17W)
+var door_open_standby = lambda: "value" >= 12.0 AND "value" <= 25.0
+
+// State B: Compressor is on (~120W), AND the light is on (+17W)
+var door_open_running = lambda: "value" >= 130.0 AND "value" <= 145.0
+
+// 3. The State Tracker
+var alert_logic = power_data
+    // stateDuration tracks exactly how long a specific condition has been true
+    |stateDuration(lambda: door_open_standby OR door_open_running)
+        .unit(1m)
+        .as('open_duration_minutes')
+
+// 4. Trigger the Alert and Send to Home Assistant
+alert_logic
+    |alert()
+        .id('fridge_door_alert')
+        .message('Fridge door open anomaly detected.')
+        // Trigger if the suspicious state lasts for 3 minutes or more
+        .crit(lambda: "open_duration_minutes" >= 3)
+        // Reset the alert once the power drops back to normal 0W or normal 120W
+        .stateChangesOnly()
+        // Fire the Webhook to Home Assistant
+        .post('http://192.168.10.200:8123/api/webhook/chronograf_fridge_alert')
