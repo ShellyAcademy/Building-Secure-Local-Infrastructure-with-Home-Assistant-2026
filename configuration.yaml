@@ -1,0 +1,41 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+python_script:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+http:
+  ssl_certificate: /ssl/fullchain.pem
+  ssl_key: /ssl/privkey.pem
+
+influxdb:
+  host: localhost
+  port: 8086
+  database: homeassistant
+  username: homeassistant
+  password: ha_strong_password
+  max_retries: 3
+  default_measurement: state
+
+  include:
+    entities:
+      - sensor.shelly_2pm_gen3_8cbfea94cc38_temperature_100
+      - sensor.shelly_2pm_gen3_8cbfea94cc38_relay_0_power
+      - sensor.shelly_2pm_gen3_8cbfea94cc38_relay_0_energy
+      - sensor.shelly_pro_em_08f9e0e78964_em1_active_power
+      - sensor.shelly_blu_h_t_7cc6b673811c_temperature
+      - sensor.shelly_blu_h_t_7cc6b673811c_humidity
+      - sensor.shelly_1pm_gen4_a085e3bbeba0_relay_0_energy
+      - sensor.shelly_plus_plug_s_d4d4da344064_relay_0_power
+      - sensor.shelly_plus_plug_s_d4d4da344064_relay_0_energy
+
+logger:
+  default: warning
+  logs:
+    custom_components.ai_influx_voice: debug

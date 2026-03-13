@@ -1,0 +1,197 @@
+- id: shellies_announce_gen2
+  alias: Shellies Announce Gen2
+  triggers:
+  - trigger: homeassistant
+    event: start
+  variables:
+    get_config_payload: '{{ {''id'': 1, ''src'': ''shellies_discovery'', ''method'':
+      ''Shelly.GetConfig''} | to_json }}'
+    get_components_payload: '{{ {''id'': 1, ''src'': ''shellies_discovery'', ''method'':''Shelly.GetComponents'',
+      ''params'': {''include'': [''config'']}} | to_json }}'
+    device_ids:
+    - shelly1pmg4-a085e3bbeba0
+    - shelly1pmminig3-5432044118bc
+    - shelly2pmg3-8cbfea94cc38
+    - shellyfloodg4-7c2c67733098
+    - shellypresence-ccba97eb5b20
+    - shellyproem50-08f9e0e78964
+    - shelly1pmminig3-5432044118bc
+    - shellyplusplugs-d4d4da344064
+    - shellyplus2pm-d48afc42bd70
+  actions:
+  - repeat:
+      for_each: '{{ device_ids }}'
+      sequence:
+      - action: mqtt.publish
+        data:
+          topic: '{{ repeat.item }}/rpc'
+          payload: '{{ get_config_payload }}'
+      - action: mqtt.publish
+        data:
+          topic: '{{ repeat.item }}/rpc'
+          payload: '{{ get_components_payload }}'
+- id: shellies_discovery_gen2
+  alias: Shellies Discovery Gen2
+  mode: queued
+  max: 999
+  triggers:
+  - trigger: mqtt
+    topic: shellies_discovery/rpc
+  actions:
+  - action: python_script.shellies_discovery_gen2
+    data:
+      id: '{{ trigger.payload_json.src }}'
+      device_config: '{{ trigger.payload_json.result }}'
+  - condition: template
+    value_template: '{{ ''mqtt'' in trigger.payload_json.result }}'
+  - action: mqtt.publish
+    data:
+      topic: '{{ trigger.payload_json.result.mqtt.topic_prefix }}/command'
+      payload: status_update
+- id: '1773173849667'
+  alias: flood_detection
+  description: ''
+  triggers:
+  - type: moist
+    device_id: 5016e654abb6e263bf6bfe2efb91ccea
+    entity_id: 8ffcde6347cdebf1d428dfd33761cba3
+    domain: binary_sensor
+    trigger: device
+  conditions: []
+  actions:
+  - type: turn_off
+    device_id: d5d736fb76fcaa4158653ab63fe13b2e
+    entity_id: b8cc7df876ee0fbed059e19fbd3df31a
+    domain: switch
+  - type: turn_on
+    device_id: 2ca159c33805472ee3577917e4de05f4
+    entity_id: 392b73c438a926199ae99646493b75be
+    domain: switch
+  mode: single
+- id: '1773174400794'
+  alias: PRESENCE_DETECTION
+  description: ''
+  triggers:
+  - trigger: time
+    at: '22:32:00'
+  conditions:
+  - type: is_not_occupied
+    condition: device
+    device_id: e31161120cf29ffd4c217646869a8ad8
+    entity_id: 888a601e4d926acb02aaa7605fe97f2e
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+  - type: is_power
+    condition: device
+    device_id: d5d736fb76fcaa4158653ab63fe13b2e
+    entity_id: 734b32ffa29fd3f81002004106e02c1b
+    domain: sensor
+    above: 7
+  actions:
+  - type: turn_off
+    device_id: d5d736fb76fcaa4158653ab63fe13b2e
+    entity_id: b8cc7df876ee0fbed059e19fbd3df31a
+    domain: switch
+  mode: single
+- id: '1773341325837'
+  alias: anomaly
+  description: ''
+  triggers:
+  - trigger: webhook
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: true
+    webhook_id: chronograf_fridge_alert
+  conditions: []
+  actions: []
+  mode: single
+- id: '1773342057775'
+  alias: notification_test
+  description: ''
+  triggers:
+  - type: turned_on
+    device_id: d5d736fb76fcaa4158653ab63fe13b2e
+    entity_id: b8cc7df876ee0fbed059e19fbd3df31a
+    domain: switch
+    trigger: device
+  conditions: []
+  actions:
+  - action: notify.notify
+    metadata: {}
+    data:
+      message: Lights on
+  - action: notify.persistent_notification
+    metadata: {}
+    data:
+      message: Lights turned on!
+  mode: single
+- id: '1773343340065'
+  alias: notify_webhook_device_off
+  description: ''
+  triggers:
+  - trigger: webhook
+    allowed_methods:
+    - GET
+    local_only: true
+    webhook_id: lights_turn_off
+  conditions: []
+  actions:
+  - action: notify.notify
+    metadata: {}
+    data:
+      message: Lights off!
+  mode: single
+- id: '1773343865936'
+  alias: notify_webhook_turn_on
+  description: ''
+  triggers:
+  - trigger: webhook
+    allowed_methods:
+    - GET
+    local_only: true
+    webhook_id: lights_turn_on
+  conditions: []
+  actions:
+  - action: notify.notify
+    metadata: {}
+    data:
+      message: Lights on!
+  mode: single
+- id: '1773347997118'
+  alias: fridge_anomaly
+  description: ''
+  triggers:
+  - trigger: webhook
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: true
+    webhook_id: fridge_alert
+  conditions: []
+  actions:
+  - action: notify.persistent_notification
+    metadata: {}
+    data:
+      message: Fridge door anomaly detected!
+  mode: single
+- id: '1773348437399'
+  alias: threshold_anomaly_detection
+  description: ''
+  triggers:
+  - type: power
+    device_id: d5d736fb76fcaa4158653ab63fe13b2e
+    entity_id: 734b32ffa29fd3f81002004106e02c1b
+    domain: sensor
+    trigger: device
+    above: 7
+  conditions: []
+  actions:
+  - action: notify.persistent_notification
+    metadata: {}
+    data:
+      message: Lights power consumption too high!
+  mode: single
